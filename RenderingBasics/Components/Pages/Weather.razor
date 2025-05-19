@@ -1,0 +1,53 @@
+﻿@page "/weather"
+@using System.Runtime.InteropServices
+@attribute [StreamRendering]
+
+<PageTitle>Weather</PageTitle>
+
+<div style="border: dashed 1px black; padding: 2rem;">
+    <h1>Weather Page</h1>
+
+    <p style="color: turquoise;">RendererInfo.Name: @RendererInfo.Name</p>
+
+    <p style="color: limegreen;">RendererInfo.IsInteractive: @RendererInfo.IsInteractive</p>
+
+    <WeatherComponent Forecasts="_forecasts"/>
+</div>
+
+@code {
+
+    //[CascadingParameter] public HttpContext? HttpContext { get; set; }
+
+
+    private List<WeatherComponent.WeatherForecast>? _forecasts;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await Task.Delay(400);
+        _forecasts = [];
+
+        await foreach (WeatherComponent.WeatherForecast f in LoadAsyncEnumerable())
+        {
+            _forecasts.Add(f);
+            StateHasChanged();
+        }
+    }
+
+    static async IAsyncEnumerable<WeatherComponent.WeatherForecast> LoadAsyncEnumerable()
+    {
+        DateOnly startDate = DateOnly.FromDateTime(DateTime.Now);
+        var summaries = new[] { "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching" };
+
+        foreach (int i in Enumerable.Range(1, 8))
+        {
+            await Task.Delay(150);
+            yield return new WeatherComponent.WeatherForecast
+            {
+                Date = startDate.AddDays(i),
+                TemperatureC = Random.Shared.Next(-20, 55),
+                Summary = summaries[Random.Shared.Next(summaries.Length)]
+            };
+        }
+    }
+
+}
